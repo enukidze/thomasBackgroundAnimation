@@ -97,87 +97,331 @@ if (window._guiInitialized) {
         mat2 m = mat2(c, -s, s, c);
         return m * v;
       }
+      
+      // NEW: Add a pseudo-random function based on a seed value
+      float random(vec2 st) {
+        return fract(sin(dot(st.xy, vec2(12.9898, 78.233))) * 43758.5453123);
+      }
+      
+      // NEW: Add fractal noise function for more natural randomness
+      float fractalNoise(vec2 uv, float complexity, float seed, int octaves) {
+        float value = 0.0;
+        float amplitude = 0.5;
+        float frequency = 1.0;
+        // Use different seeds for each octave for more variation
+        for(int i = 0; i < octaves; i++) {
+          if(i >= octaves) break; // Fix for some GPU compatibility
+          value += amplitude * snoise(vec2(
+            uv.x * frequency * complexity + seed * float(i) * 0.17,
+            uv.y * frequency * complexity + seed * float(i) * 0.23
+          ));
+          frequency *= 2.0;
+          amplitude *= 0.5;
+        }
+        return value;
+      }
         
       void main() {
         vec2 uv = vUv * 2.0 - 1.0;
         uv.x *= 1.4;
         float dist = length(uv);
         
-        // CHANGE: Use a larger modulo to prevent floating point precision issues
-        // This ensures better numerical stability for long-running animations
+        // NEW: Use prime number based timing to avoid repeating patterns
+        // Use several different prime-based timescales for maximum variation
         float animTime = mod(time * speed + seed * 10.0, 1000.0);
+        float animTime1 = mod(time * speed * 1.618033988749895 + seed * 7.3, 1000.0); // Golden ratio
+        float animTime2 = mod(time * speed * 1.414213562373095 + seed * 3.7, 1000.0); // Square root of 2
+        float animTime3 = mod(time * speed * 1.732050807568877 + seed * 5.2, 1000.0); // Square root of 3
         
-        // Create flowing directional movements with consistent speed
+        // NEW: Create a chaotic time variation based on noise
+        float chaosTime = animTime + snoise(vec2(animTime * 0.01, seed)) * 10.0;
+        
+        // NEW: Use more irrational number relationships and varied seeds
+        // Primary flow directions with non-repeating configurations
+        vec2 flowPrimary1 = vec2(
+          sin(animTime1 * 0.25 + seed * 1.1) * 0.6 + cos(animTime2 * 0.13) * 0.2,
+          cos(animTime3 * 0.3 + seed * 0.7) * 0.6 + sin(animTime1 * 0.21) * 0.1
+        );
+        
+        vec2 flowPrimary2 = vec2(
+          cos(animTime2 * 0.15 - seed * 1.3) * 0.7 + sin(animTime3 * 0.19) * 0.15, 
+          -sin(animTime1 * 0.2 - seed * 0.9) * 0.7 + cos(animTime2 * 0.11) * 0.2
+        );
+        
+        // Secondary flow directions with chaotic variations
         vec2 flowDir1 = vec2(
-          sin(animTime * 0.3 + seed * 0.5) * 0.5,
-          cos(animTime * 0.4 + seed * 0.7) * 0.5
+          sin(animTime3 * 0.5 + seed * 1.4 + sin(chaosTime * 0.02) * 0.3) * 0.5,
+          -cos(animTime2 * 0.45 + seed * 0.6 + cos(chaosTime * 0.03) * 0.2) * 0.5
         );
         
         vec2 flowDir2 = vec2(
-          cos(animTime * 0.2 - seed * 0.3) * 0.7,
-          sin(animTime * 0.5 - seed * 0.2) * 0.3
+          -cos(animTime1 * 0.4 - seed * 1.25) * 0.6 + sin(animTime3 * 0.17) * 0.2, 
+          sin(animTime2 * 0.55 - seed * 0.35) * 0.4 + cos(animTime1 * 0.23) * 0.15
         );
         
         vec2 flowDir3 = vec2(
-          sin(animTime * 0.6 + seed * 0.4) * 0.4,
-          cos(animTime * 0.3 + seed * 0.6) * 0.6
+          sin(animTime2 * 0.6 + seed * 1.2 + cos(chaosTime * 0.04) * 0.25) * 0.4,
+          cos(animTime1 * 0.35 + seed * 0.45 + sin(chaosTime * 0.05) * 0.3) * 0.6
         );
         
-        // Create flowing noise patterns with consistent speed
-        float baseNoise = snoise(vec2(
-          uv.x * 1.2 * complexity + flowDir1.x * animTime,
-          uv.y * 1.8 * complexity + flowDir1.y * animTime
-        )) * 0.4;
+        // Cross-flowing currents with chaotic influences
+        vec2 crossFlow1 = vec2(
+          cos(animTime3 * 0.37 + seed * 0.92) * 0.5 + sin(chaosTime * 0.07) * 0.2, 
+          sin(animTime1 * 0.28 + seed * 1.53) * 0.5 + cos(chaosTime * 0.06) * 0.1
+        );
         
-        baseNoise += snoise(vec2(
-          uv.x * 3.4 * complexity + flowDir2.x * animTime * 0.7,
-          uv.y * 4.6 * complexity + flowDir2.y * animTime * 0.7
-        )) * 0.3;
+        vec2 crossFlow2 = vec2(
+          -sin(animTime2 * 0.41 - seed * 1.31) * 0.4 + cos(chaosTime * 0.08) * 0.15,
+          cos(animTime3 * 0.33 - seed * 0.42) * 0.6 + sin(chaosTime * 0.09) * 0.1
+        );
         
-        baseNoise += snoise(vec2(
-          uv.x * 6.8 * complexity + flowDir3.x * animTime * 0.5,
-          uv.y * 7.2 * complexity + flowDir3.y * animTime * 0.5
-        )) * 0.2;
+        // Slow waves with long periods and chaotic variations
+        vec2 slowWaveDir1 = vec2(
+          sin(animTime1 * 0.05 + seed * 0.82) * 0.9 + cos(animTime2 * 0.023) * 0.1,
+          cos(animTime3 * 0.04 + seed * 0.71) * 0.8 + sin(animTime1 * 0.017) * 0.15
+        );
         
-        float noise2 = snoise(vec2(
-          uv.x * 2.2 * complexity + flowDir2.y * animTime * 0.6,
-          uv.y * 3.0 * complexity + flowDir1.x * animTime * 0.6
-        )) * 0.35;
+        vec2 slowWaveDir2 = vec2(
+          cos(animTime2 * 0.03 - seed * 0.95) * 0.8 + sin(animTime3 * 0.027) * 0.15,
+          sin(animTime1 * 0.06 - seed * 0.75) * 0.9 + cos(animTime2 * 0.019) * 0.1
+        );
         
-        noise2 += snoise(vec2(
-          uv.x * 5.4 * complexity + flowDir3.y * animTime * 0.4,
-          uv.y * 6.0 * complexity + flowDir2.x * animTime * 0.4
-        )) * 0.25;
+        // Fast erratic directions with chaotic components
+        vec2 fastErraticDir1 = vec2(
+          sin(animTime3 * 1.2 + cos(chaosTime * 0.7) * 0.6) * 0.3,
+          cos(animTime1 * 1.4 + sin(chaosTime * 0.9) * 0.7) * 0.3
+        );
         
-        float noise3 = snoise(vec2(
-          uv.x * 3.3 * complexity + flowDir1.y * animTime * 0.8,
-          uv.y * 2.7 * complexity + flowDir3.x * animTime * 0.8
-        )) * 0.3;
+        vec2 fastErraticDir2 = vec2(
+          cos(animTime2 * 1.6 - sin(chaosTime * 1.1) * 0.5) * 0.35, 
+          sin(animTime3 * 1.3 - cos(chaosTime * 0.8) * 0.6) * 0.25
+        );
         
-        noise3 += snoise(vec2(
-          uv.x * 7.6 * complexity + flowDir2.y * animTime * 0.3,
-          uv.y * 6.4 * complexity + flowDir1.x * animTime * 0.3
-        )) * 0.2;
+        // NEW: Create non-uniform rotation effects
+        float rotationAngle1 = sin(animTime1 * 0.1) * 0.4 + animTime2 * 0.05;
+        float rotationAngle2 = cos(animTime3 * 0.08) * 0.3 + animTime1 * 0.04;
+        vec2 rotatedUV1 = rotate(uv, rotationAngle1);
+        vec2 rotatedUV2 = rotate(uv, rotationAngle2);
         
-        float noise4 = snoise(vec2(
-          uv.x * 4.8 * complexity + flowDir3.x * animTime * 0.5,
-          uv.y * 4.5 * complexity + flowDir2.y * animTime * 0.5
-        )) * 0.25;
+        // NEW: Create varying complexity based on time for more evolution
+        float varyingComplexity = complexity * (1.0 + sin(animTime1 * 0.05) * 0.2);
         
-        // Additional flow turbulence with consistent speed
-        float turbulence = snoise(vec2(
-          uv.x * 5.0 * complexity + flowDir1.x * animTime * 0.2,
-          uv.y * 5.0 * complexity + flowDir2.y * animTime * 0.3
-        )) * 0.15;
+        // NEW: Use fractal noise with varying octaves for more natural randomness
+        float largeSlowWave1 = fractalNoise(
+          vec2(
+            uv.x * 0.4 * varyingComplexity + slowWaveDir1.x * animTime1 * 0.04,
+            uv.y * 0.5 * varyingComplexity + slowWaveDir1.y * animTime3 * 0.04
+          ), 
+          complexity, 
+          seed + animTime * 0.002, 
+          3
+        ) * 0.6;
         
-        // Combine noise with flow-based turbulence
-        float combinedNoise = (baseNoise + noise2 + noise3 + noise4) * (1.0 + turbulence);
+        float largeSlowWave2 = fractalNoise(
+          vec2(
+            uv.x * 0.3 * varyingComplexity + slowWaveDir2.x * animTime2 * 0.03,
+            uv.y * 0.6 * varyingComplexity + slowWaveDir2.y * animTime1 * 0.03
+          ), 
+          complexity, 
+          seed + 2.76 + animTime * 0.003, 
+          4
+        ) * 0.45;
         
-        // Create smooth distance modification
+        // Combine slow waves with varying weights based on time
+        float timeVaryingWeight = sin(animTime2 * 0.023) * 0.2 + 0.5;
+        float largeSlowWave = mix(largeSlowWave1, largeSlowWave2, timeVaryingWeight);
+        
+        // Primary medium-sized flows with fractal noise and chaotic timing
+        float primaryFlow1 = fractalNoise(
+          vec2(
+            rotatedUV1.x * 0.9 * varyingComplexity + flowPrimary1.x * animTime3 * 0.2,
+            rotatedUV1.y * 1.1 * varyingComplexity + flowPrimary1.y * animTime2 * 0.2
+          ), 
+          complexity, 
+          seed + 1.43 + chaosTime * 0.001, 
+          3
+        ) * 0.5;
+        
+        float primaryFlow2 = fractalNoise(
+          vec2(
+            rotatedUV2.x * 1.0 * varyingComplexity + flowPrimary2.x * animTime1 * 0.15,
+            rotatedUV2.y * 0.8 * varyingComplexity + flowPrimary2.y * animTime3 * 0.15
+          ), 
+          complexity, 
+          seed + 5.31 + chaosTime * 0.002, 
+          4
+        ) * 0.45;
+        
+        // NEW: Add occasional turbulent bursts
+        float burstFactor = pow(sin(animTime1 * 0.47) * 0.5 + 0.5, 3.0) * sin(animTime2 * 0.53) * 0.5 + 0.5;
+        float turbulentBurst = fractalNoise(
+          vec2(
+            uv.x * 4.0 * varyingComplexity + sin(chaosTime * 0.3) * 2.0,
+            uv.y * 4.0 * varyingComplexity + cos(chaosTime * 0.4) * 2.0
+          ),
+          complexity,
+          seed + 7.89 + animTime3 * 0.01,
+          2
+        ) * burstFactor * 0.4;
+        
+        // Base noise with fractal variations
+        float baseNoise = fractalNoise(
+          vec2(
+            uv.x * 1.2 * varyingComplexity + flowDir1.x * animTime1 * 0.3,
+            uv.y * 1.8 * varyingComplexity + flowDir1.y * animTime2 * 0.3
+          ),
+          complexity,
+          seed + 3.21 + chaosTime * 0.004,
+          3
+        ) * 0.4;
+        
+        baseNoise += fractalNoise(
+          vec2(
+            uv.x * 3.4 * varyingComplexity + flowDir2.x * animTime3 * 0.35,
+            uv.y * 4.6 * varyingComplexity + flowDir2.y * animTime1 * 0.35
+          ),
+          complexity,
+          seed + 4.56 + chaosTime * 0.003,
+          3
+        ) * 0.3;
+        
+        baseNoise += fractalNoise(
+          vec2(
+            rotatedUV1.x * 6.8 * varyingComplexity + flowDir3.x * animTime2 * 0.4,
+            rotatedUV1.y * 7.2 * varyingComplexity + flowDir3.y * animTime3 * 0.4
+          ),
+          complexity,
+          seed + 6.78 + chaosTime * 0.005,
+          2
+        ) * 0.2;
+        
+        // Cross-flowing currents with time-varying influence
+        float crossInfluence = sin(animTime1 * 0.061) * 0.25 + 0.5;
+        float crossNoise1 = fractalNoise(
+          vec2(
+            rotatedUV2.x * 2.5 * varyingComplexity + crossFlow1.x * animTime3 * 0.25,
+            rotatedUV2.y * 2.2 * varyingComplexity + crossFlow1.y * animTime2 * 0.25
+          ),
+          complexity,
+          seed + 8.91 + chaosTime * 0.002,
+          3
+        ) * 0.35 * crossInfluence;
+        
+        float crossNoise2 = fractalNoise(
+          vec2(
+            uv.x * 3.8 * varyingComplexity + crossFlow2.x * animTime1 * 0.3,
+            uv.y * 3.2 * varyingComplexity + crossFlow2.y * animTime3 * 0.3
+          ),
+          complexity,
+          seed + 9.12 + chaosTime * 0.006,
+          3
+        ) * 0.3 * (1.0 - crossInfluence);
+        
+        // Small fast erratic movements with occasional rapid changes
+        float erraticIntensity = 0.15 + pow(sin(animTime2 * 1.23) * 0.5 + 0.5, 4.0) * 0.2;
+        float smallFastNoise1 = fractalNoise(
+          vec2(
+            uv.x * 12.0 * varyingComplexity + fastErraticDir1.x * animTime3 * 2.0,
+            uv.y * 10.0 * varyingComplexity + fastErraticDir1.y * animTime1 * 2.0
+          ),
+          complexity,
+          seed + 10.34 + chaosTime * 0.01,
+          2
+        ) * erraticIntensity;
+        
+        float smallFastNoise2 = fractalNoise(
+          vec2(
+            rotatedUV1.x * 14.0 * varyingComplexity + fastErraticDir2.x * animTime2 * 2.4,
+            rotatedUV1.y * 13.0 * varyingComplexity + fastErraticDir2.y * animTime3 * 2.4
+          ),
+          complexity,
+          seed + 11.56 + chaosTime * 0.02,
+          2
+        ) * erraticIntensity * 0.7;
+        
+        float smallFastNoise = smallFastNoise1 + smallFastNoise2;
+        
+        // Remaining noise layers with more variation and non-repeating patterns
+        float noise2 = fractalNoise(
+          vec2(
+            rotatedUV2.x * 2.2 * varyingComplexity + flowDir2.y * animTime1 * 0.6,
+            rotatedUV2.y * 3.0 * varyingComplexity + flowDir1.x * animTime3 * 0.6
+          ),
+          complexity,
+          seed + 12.78 + chaosTime * 0.007,
+          3
+        ) * 0.35;
+        
+        float noise3 = fractalNoise(
+          vec2(
+            uv.x * 3.3 * varyingComplexity + flowDir1.y * animTime2 * 0.8,
+            uv.y * 2.7 * varyingComplexity + flowDir3.x * animTime1 * 0.8
+          ),
+          complexity,
+          seed + 13.91 + chaosTime * 0.008,
+          3
+        ) * 0.3;
+        
+        float noise4 = fractalNoise(
+          vec2(
+            rotatedUV1.x * 4.8 * varyingComplexity + flowDir3.x * animTime3 * 0.5,
+            rotatedUV1.y * 4.5 * varyingComplexity + flowDir2.y * animTime2 * 0.5
+          ),
+          complexity,
+          seed + 14.23 + chaosTime * 0.009,
+          2
+        ) * 0.25;
+        
+        // Additional turbulence with time-varying weights
+        float turbWeight = cos(animTime1 * 0.073) * 0.2 + 0.7;
+        float turbulence = fractalNoise(
+          vec2(
+            rotatedUV2.x * 5.0 * varyingComplexity + crossFlow1.x * animTime2 * 0.2,
+            rotatedUV2.y * 5.0 * varyingComplexity + crossFlow2.y * animTime3 * 0.3
+          ),
+          complexity,
+          seed + 15.67 + chaosTime * 0.003,
+          3
+        ) * 0.15 * turbWeight;
+        
+        // NEW: Time-varying weights for all elements
+        float primaryWeight = (sin(animTime1 * 0.037) * 0.15 + 0.45) * (1.0 + burstFactor * 0.3);
+        float secondaryWeight = (cos(animTime2 * 0.043) * 0.1 + 0.3) * (1.0 - burstFactor * 0.2);
+        float detailWeight = (sin(animTime3 * 0.051) * 0.1 + 0.2) * (1.0 + crossInfluence * 0.2);
+        
+        // Combine all elements with time-varying weights and chaotic influences
+        float primaryElement = largeSlowWave * 0.5 + primaryFlow1 * 0.3 + primaryFlow2 * 0.2 + turbulentBurst;
+        float secondaryElement = baseNoise * 0.4 + crossNoise1 * 0.3 + crossNoise2 * 0.3;
+        float detailElement = (noise2 + noise3 + noise4) * 0.4 + turbulence * 0.6;
+        
+        float combinedNoise = primaryElement * primaryWeight + 
+                             secondaryElement * secondaryWeight + 
+                             detailElement * detailWeight;
+        
+        // Add small fast noise with chaotic variation
+        combinedNoise += smallFastNoise * (0.6 + burstFactor * 0.3);
+        
+        // NEW: Occasionally introduce completely different patterns
+        float patternShift = pow(sin(animTime1 * 0.029 + animTime3 * 0.031), 10.0) * 0.5;
+        if (patternShift > 0.2) {
+          float altPattern = fractalNoise(
+            vec2(
+              uv.x * 3.0 * varyingComplexity + sin(chaosTime * 0.4) * 0.5,
+              uv.y * 3.0 * varyingComplexity + cos(chaosTime * 0.3) * 0.5
+            ),
+            complexity,
+            seed + 20.56 + animTime2 * 0.05,
+            4
+          ) * patternShift;
+          
+          combinedNoise = mix(combinedNoise, altPattern, patternShift * 0.5);
+        }
+        
+        // Create smooth distance modification with chaotic influences
         float modifiedDist = mix(
           dist,
-          pow(dist, 2.0 - sphereEffect + sin(animTime * 0.2) * 0.1),
-          sphereEffect + turbulence * 0.2
+          pow(dist, 2.0 - sphereEffect + sin(animTime2 * 0.2) * 0.1 + largeSlowWave * 0.3 + turbulentBurst * 0.2),
+          sphereEffect + turbulence * 0.2 + primaryFlow1 * 0.1 + patternShift * 0.3
         );
 
         // Use animTime for color transitions
@@ -275,15 +519,38 @@ if (window._guiInitialized) {
         // Apply color intensity
         finalColor = mix(vec3(0.5), finalColor, colorIntensity);
         
-        // Add flowing grain effect with animTime
-        float fineGrain = snoise(uv * 400.0 + flowDir1 * animTime * 0.1) * 0.12 * grainAmount;
-        float mediumGrain = snoise(uv * 200.0 + flowDir2 * animTime * 0.05) * 0.08 * grainAmount;
-        float largeGrain = snoise(uv * 100.0 + flowDir3 * animTime * 0.03) * 0.05 * grainAmount;
+        // NEW: Create more chaotic grain patterns
+        float grainTime1 = animTime1 * 0.05;
+        float grainTime2 = animTime2 * 0.03;
         
-        // Enhanced grain mask
-        float grainMask = 1.0 + sin(animTime * 0.5 + turbulence) * 0.1;
-        vec3 grain = vec3(max(fineGrain + mediumGrain + largeGrain, 0.0)) * grainMask;
-        finalColor += grain;
+        // Reduce grain bursts for more consistent, subtle effect
+        float grainBurst = pow(sin(animTime1 * 0.37) * 0.5 + 0.5, 12.0) * 0.5;
+        
+        // Fine grain with higher frequency but lower amplitude
+        float fineGrain = fractalNoise(
+          uv * 800.0 + fastErraticDir1 * grainTime1 * 0.2, 
+          1.0, 
+          seed + 16.78 + chaosTime * 0.01, 
+          2
+        ) * 0.04 * grainAmount;
+        
+        // Medium grain with more subtle movement
+        float mediumGrain = fractalNoise(
+          rotatedUV1 * 400.0 + flowDir2 * grainTime2 * 0.1, 
+          1.0, 
+          seed + 17.91 + chaosTime * 0.01, 
+          2
+        ) * 0.03 * grainAmount;
+        
+        // We don't need large grain for microsoft.ai style
+        // float largeGrain = fractalNoise(...) * 0.05 * grainAmount;
+        
+        // Create a more uniform grain with less chaotic variations
+        float grainMask = 1.0 + (sin(animTime2 * 0.3) * 0.05);
+        vec3 grain = vec3(max(fineGrain + mediumGrain, 0.0)) * grainMask;
+        
+        // Apply grain with a more subtle approach
+        finalColor = mix(finalColor, finalColor + grain, 0.7);
         
         gl_FragColor = vec4(finalColor, 1.0);
       }
@@ -294,10 +561,10 @@ if (window._guiInitialized) {
 
     // Settings object with default values (no longer tied to GUI)
     const settings = {
-      speed: 0.05,
+      speed: 0.01, // Changed from 0.05 to 0.1
       complexity: 2,
       colorIntensity: 1.3,
-      grainAmount: 2,
+      grainAmount: 9, // Changed from 2 to 9
       sphereEffect: 0.0,
       layerCompression: 0.0,
       gradient1Start: "#336622",
@@ -402,12 +669,13 @@ if (window._guiInitialized) {
     effectsFolder.open();
     colorsFolder.open();
 
-    // Animation Loop - add initial offset to start animation immediately
+    // Animation Loop - use consistent time based on seed
     const clock = new THREE.Clock();
-    const initialTime = Math.random() * 100; // Random starting time
+    // Use the existing seed value instead of random for consistency
+    const initialTime = material.uniforms.seed.value % 10; // Use modulo to keep it reasonable
     function animate() {
         requestAnimationFrame(animate);
-        const time = clock.getElapsedTime() + initialTime; // Add initial offset
+        const time = clock.getElapsedTime() + initialTime; // Add consistent offset
         mesh.material.uniforms.time.value = time;
         renderer.render(scene, camera);
     }
@@ -581,87 +849,331 @@ if (window._guiInitialized) {
         mat2 m = mat2(c, -s, s, c);
         return m * v;
       }
+      
+      // NEW: Add a pseudo-random function based on a seed value
+      float random(vec2 st) {
+        return fract(sin(dot(st.xy, vec2(12.9898, 78.233))) * 43758.5453123);
+      }
+      
+      // NEW: Add fractal noise function for more natural randomness
+      float fractalNoise(vec2 uv, float complexity, float seed, int octaves) {
+        float value = 0.0;
+        float amplitude = 0.5;
+        float frequency = 1.0;
+        // Use different seeds for each octave for more variation
+        for(int i = 0; i < octaves; i++) {
+          if(i >= octaves) break; // Fix for some GPU compatibility
+          value += amplitude * snoise(vec2(
+            uv.x * frequency * complexity + seed * float(i) * 0.17,
+            uv.y * frequency * complexity + seed * float(i) * 0.23
+          ));
+          frequency *= 2.0;
+          amplitude *= 0.5;
+        }
+        return value;
+      }
         
       void main() {
         vec2 uv = vUv * 2.0 - 1.0;
         uv.x *= 1.4;
         float dist = length(uv);
         
-        // CHANGE: Use a larger modulo to prevent floating point precision issues
-        // This ensures better numerical stability for long-running animations
+        // NEW: Use prime number based timing to avoid repeating patterns
+        // Use several different prime-based timescales for maximum variation
         float animTime = mod(time * speed + seed * 10.0, 1000.0);
+        float animTime1 = mod(time * speed * 1.618033988749895 + seed * 7.3, 1000.0); // Golden ratio
+        float animTime2 = mod(time * speed * 1.414213562373095 + seed * 3.7, 1000.0); // Square root of 2
+        float animTime3 = mod(time * speed * 1.732050807568877 + seed * 5.2, 1000.0); // Square root of 3
         
-        // Create flowing directional movements with consistent speed
+        // NEW: Create a chaotic time variation based on noise
+        float chaosTime = animTime + snoise(vec2(animTime * 0.01, seed)) * 10.0;
+        
+        // NEW: Use more irrational number relationships and varied seeds
+        // Primary flow directions with non-repeating configurations
+        vec2 flowPrimary1 = vec2(
+          sin(animTime1 * 0.25 + seed * 1.1) * 0.6 + cos(animTime2 * 0.13) * 0.2,
+          cos(animTime3 * 0.3 + seed * 0.7) * 0.6 + sin(animTime1 * 0.21) * 0.1
+        );
+        
+        vec2 flowPrimary2 = vec2(
+          cos(animTime2 * 0.15 - seed * 1.3) * 0.7 + sin(animTime3 * 0.19) * 0.15, 
+          -sin(animTime1 * 0.2 - seed * 0.9) * 0.7 + cos(animTime2 * 0.11) * 0.2
+        );
+        
+        // Secondary flow directions with chaotic variations
         vec2 flowDir1 = vec2(
-          sin(animTime * 0.3 + seed * 0.5) * 0.5,
-          cos(animTime * 0.4 + seed * 0.7) * 0.5
+          sin(animTime3 * 0.5 + seed * 1.4 + sin(chaosTime * 0.02) * 0.3) * 0.5,
+          -cos(animTime2 * 0.45 + seed * 0.6 + cos(chaosTime * 0.03) * 0.2) * 0.5
         );
         
         vec2 flowDir2 = vec2(
-          cos(animTime * 0.2 - seed * 0.3) * 0.7,
-          sin(animTime * 0.5 - seed * 0.2) * 0.3
+          -cos(animTime1 * 0.4 - seed * 1.25) * 0.6 + sin(animTime3 * 0.17) * 0.2, 
+          sin(animTime2 * 0.55 - seed * 0.35) * 0.4 + cos(animTime1 * 0.23) * 0.15
         );
         
         vec2 flowDir3 = vec2(
-          sin(animTime * 0.6 + seed * 0.4) * 0.4,
-          cos(animTime * 0.3 + seed * 0.6) * 0.6
+          sin(animTime2 * 0.6 + seed * 1.2 + cos(chaosTime * 0.04) * 0.25) * 0.4,
+          cos(animTime1 * 0.35 + seed * 0.45 + sin(chaosTime * 0.05) * 0.3) * 0.6
         );
         
-        // Create flowing noise patterns with consistent speed
-        float baseNoise = snoise(vec2(
-          uv.x * 1.2 * complexity + flowDir1.x * animTime,
-          uv.y * 1.8 * complexity + flowDir1.y * animTime
-        )) * 0.4;
+        // Cross-flowing currents with chaotic influences
+        vec2 crossFlow1 = vec2(
+          cos(animTime3 * 0.37 + seed * 0.92) * 0.5 + sin(chaosTime * 0.07) * 0.2, 
+          sin(animTime1 * 0.28 + seed * 1.53) * 0.5 + cos(chaosTime * 0.06) * 0.1
+        );
         
-        baseNoise += snoise(vec2(
-          uv.x * 3.4 * complexity + flowDir2.x * animTime * 0.7,
-          uv.y * 4.6 * complexity + flowDir2.y * animTime * 0.7
-        )) * 0.3;
+        vec2 crossFlow2 = vec2(
+          -sin(animTime2 * 0.41 - seed * 1.31) * 0.4 + cos(chaosTime * 0.08) * 0.15,
+          cos(animTime3 * 0.33 - seed * 0.42) * 0.6 + sin(chaosTime * 0.09) * 0.1
+        );
         
-        baseNoise += snoise(vec2(
-          uv.x * 6.8 * complexity + flowDir3.x * animTime * 0.5,
-          uv.y * 7.2 * complexity + flowDir3.y * animTime * 0.5
-        )) * 0.2;
+        // Slow waves with long periods and chaotic variations
+        vec2 slowWaveDir1 = vec2(
+          sin(animTime1 * 0.05 + seed * 0.82) * 0.9 + cos(animTime2 * 0.023) * 0.1,
+          cos(animTime3 * 0.04 + seed * 0.71) * 0.8 + sin(animTime1 * 0.017) * 0.15
+        );
         
-        float noise2 = snoise(vec2(
-          uv.x * 2.2 * complexity + flowDir2.y * animTime * 0.6,
-          uv.y * 3.0 * complexity + flowDir1.x * animTime * 0.6
-        )) * 0.35;
+        vec2 slowWaveDir2 = vec2(
+          cos(animTime2 * 0.03 - seed * 0.95) * 0.8 + sin(animTime3 * 0.027) * 0.15,
+          sin(animTime1 * 0.06 - seed * 0.75) * 0.9 + cos(animTime2 * 0.019) * 0.1
+        );
         
-        noise2 += snoise(vec2(
-          uv.x * 5.4 * complexity + flowDir3.y * animTime * 0.4,
-          uv.y * 6.0 * complexity + flowDir2.x * animTime * 0.4
-        )) * 0.25;
+        // Fast erratic directions with chaotic components
+        vec2 fastErraticDir1 = vec2(
+          sin(animTime3 * 1.2 + cos(chaosTime * 0.7) * 0.6) * 0.3,
+          cos(animTime1 * 1.4 + sin(chaosTime * 0.9) * 0.7) * 0.3
+        );
         
-        float noise3 = snoise(vec2(
-          uv.x * 3.3 * complexity + flowDir1.y * animTime * 0.8,
-          uv.y * 2.7 * complexity + flowDir3.x * animTime * 0.8
-        )) * 0.3;
+        vec2 fastErraticDir2 = vec2(
+          cos(animTime2 * 1.6 - sin(chaosTime * 1.1) * 0.5) * 0.35, 
+          sin(animTime3 * 1.3 - cos(chaosTime * 0.8) * 0.6) * 0.25
+        );
         
-        noise3 += snoise(vec2(
-          uv.x * 7.6 * complexity + flowDir2.y * animTime * 0.3,
-          uv.y * 6.4 * complexity + flowDir1.x * animTime * 0.3
-        )) * 0.2;
+        // NEW: Create non-uniform rotation effects
+        float rotationAngle1 = sin(animTime1 * 0.1) * 0.4 + animTime2 * 0.05;
+        float rotationAngle2 = cos(animTime3 * 0.08) * 0.3 + animTime1 * 0.04;
+        vec2 rotatedUV1 = rotate(uv, rotationAngle1);
+        vec2 rotatedUV2 = rotate(uv, rotationAngle2);
         
-        float noise4 = snoise(vec2(
-          uv.x * 4.8 * complexity + flowDir3.x * animTime * 0.5,
-          uv.y * 4.5 * complexity + flowDir2.y * animTime * 0.5
-        )) * 0.25;
+        // NEW: Create varying complexity based on time for more evolution
+        float varyingComplexity = complexity * (1.0 + sin(animTime1 * 0.05) * 0.2);
         
-        // Additional flow turbulence with consistent speed
-        float turbulence = snoise(vec2(
-          uv.x * 5.0 * complexity + flowDir1.x * animTime * 0.2,
-          uv.y * 5.0 * complexity + flowDir2.y * animTime * 0.3
-        )) * 0.15;
+        // NEW: Use fractal noise with varying octaves for more natural randomness
+        float largeSlowWave1 = fractalNoise(
+          vec2(
+            uv.x * 0.4 * varyingComplexity + slowWaveDir1.x * animTime1 * 0.04,
+            uv.y * 0.5 * varyingComplexity + slowWaveDir1.y * animTime3 * 0.04
+          ), 
+          complexity, 
+          seed + animTime * 0.002, 
+          3
+        ) * 0.6;
         
-        // Combine noise with flow-based turbulence
-        float combinedNoise = (baseNoise + noise2 + noise3 + noise4) * (1.0 + turbulence);
+        float largeSlowWave2 = fractalNoise(
+          vec2(
+            uv.x * 0.3 * varyingComplexity + slowWaveDir2.x * animTime2 * 0.03,
+            uv.y * 0.6 * varyingComplexity + slowWaveDir2.y * animTime1 * 0.03
+          ), 
+          complexity, 
+          seed + 2.76 + animTime * 0.003, 
+          4
+        ) * 0.45;
         
-        // Create smooth distance modification
+        // Combine slow waves with varying weights based on time
+        float timeVaryingWeight = sin(animTime2 * 0.023) * 0.2 + 0.5;
+        float largeSlowWave = mix(largeSlowWave1, largeSlowWave2, timeVaryingWeight);
+        
+        // Primary medium-sized flows with fractal noise and chaotic timing
+        float primaryFlow1 = fractalNoise(
+          vec2(
+            rotatedUV1.x * 0.9 * varyingComplexity + flowPrimary1.x * animTime3 * 0.2,
+            rotatedUV1.y * 1.1 * varyingComplexity + flowPrimary1.y * animTime2 * 0.2
+          ), 
+          complexity, 
+          seed + 1.43 + chaosTime * 0.001, 
+          3
+        ) * 0.5;
+        
+        float primaryFlow2 = fractalNoise(
+          vec2(
+            rotatedUV2.x * 1.0 * varyingComplexity + flowPrimary2.x * animTime1 * 0.15,
+            rotatedUV2.y * 0.8 * varyingComplexity + flowPrimary2.y * animTime3 * 0.15
+          ), 
+          complexity, 
+          seed + 5.31 + chaosTime * 0.002, 
+          4
+        ) * 0.45;
+        
+        // NEW: Add occasional turbulent bursts
+        float burstFactor = pow(sin(animTime1 * 0.47) * 0.5 + 0.5, 3.0) * sin(animTime2 * 0.53) * 0.5 + 0.5;
+        float turbulentBurst = fractalNoise(
+          vec2(
+            uv.x * 4.0 * varyingComplexity + sin(chaosTime * 0.3) * 2.0,
+            uv.y * 4.0 * varyingComplexity + cos(chaosTime * 0.4) * 2.0
+          ),
+          complexity,
+          seed + 7.89 + animTime3 * 0.01,
+          2
+        ) * burstFactor * 0.4;
+        
+        // Base noise with fractal variations
+        float baseNoise = fractalNoise(
+          vec2(
+            uv.x * 1.2 * varyingComplexity + flowDir1.x * animTime1 * 0.3,
+            uv.y * 1.8 * varyingComplexity + flowDir1.y * animTime2 * 0.3
+          ),
+          complexity,
+          seed + 3.21 + chaosTime * 0.004,
+          3
+        ) * 0.4;
+        
+        baseNoise += fractalNoise(
+          vec2(
+            uv.x * 3.4 * varyingComplexity + flowDir2.x * animTime3 * 0.35,
+            uv.y * 4.6 * varyingComplexity + flowDir2.y * animTime1 * 0.35
+          ),
+          complexity,
+          seed + 4.56 + chaosTime * 0.003,
+          3
+        ) * 0.3;
+        
+        baseNoise += fractalNoise(
+          vec2(
+            rotatedUV1.x * 6.8 * varyingComplexity + flowDir3.x * animTime2 * 0.4,
+            rotatedUV1.y * 7.2 * varyingComplexity + flowDir3.y * animTime3 * 0.4
+          ),
+          complexity,
+          seed + 6.78 + chaosTime * 0.005,
+          2
+        ) * 0.2;
+        
+        // Cross-flowing currents with time-varying influence
+        float crossInfluence = sin(animTime1 * 0.061) * 0.25 + 0.5;
+        float crossNoise1 = fractalNoise(
+          vec2(
+            rotatedUV2.x * 2.5 * varyingComplexity + crossFlow1.x * animTime3 * 0.25,
+            rotatedUV2.y * 2.2 * varyingComplexity + crossFlow1.y * animTime2 * 0.25
+          ),
+          complexity,
+          seed + 8.91 + chaosTime * 0.002,
+          3
+        ) * 0.35 * crossInfluence;
+        
+        float crossNoise2 = fractalNoise(
+          vec2(
+            uv.x * 3.8 * varyingComplexity + crossFlow2.x * animTime1 * 0.3,
+            uv.y * 3.2 * varyingComplexity + crossFlow2.y * animTime3 * 0.3
+          ),
+          complexity,
+          seed + 9.12 + chaosTime * 0.006,
+          3
+        ) * 0.3 * (1.0 - crossInfluence);
+        
+        // Small fast erratic movements with occasional rapid changes
+        float erraticIntensity = 0.15 + pow(sin(animTime2 * 1.23) * 0.5 + 0.5, 4.0) * 0.2;
+        float smallFastNoise1 = fractalNoise(
+          vec2(
+            uv.x * 12.0 * varyingComplexity + fastErraticDir1.x * animTime3 * 2.0,
+            uv.y * 10.0 * varyingComplexity + fastErraticDir1.y * animTime1 * 2.0
+          ),
+          complexity,
+          seed + 10.34 + chaosTime * 0.01,
+          2
+        ) * erraticIntensity;
+        
+        float smallFastNoise2 = fractalNoise(
+          vec2(
+            rotatedUV1.x * 14.0 * varyingComplexity + fastErraticDir2.x * animTime2 * 2.4,
+            rotatedUV1.y * 13.0 * varyingComplexity + fastErraticDir2.y * animTime3 * 2.4
+          ),
+          complexity,
+          seed + 11.56 + chaosTime * 0.02,
+          2
+        ) * erraticIntensity * 0.7;
+        
+        float smallFastNoise = smallFastNoise1 + smallFastNoise2;
+        
+        // Remaining noise layers with more variation and non-repeating patterns
+        float noise2 = fractalNoise(
+          vec2(
+            rotatedUV2.x * 2.2 * varyingComplexity + flowDir2.y * animTime1 * 0.6,
+            rotatedUV2.y * 3.0 * varyingComplexity + flowDir1.x * animTime3 * 0.6
+          ),
+          complexity,
+          seed + 12.78 + chaosTime * 0.007,
+          3
+        ) * 0.35;
+        
+        float noise3 = fractalNoise(
+          vec2(
+            uv.x * 3.3 * varyingComplexity + flowDir1.y * animTime2 * 0.8,
+            uv.y * 2.7 * varyingComplexity + flowDir3.x * animTime1 * 0.8
+          ),
+          complexity,
+          seed + 13.91 + chaosTime * 0.008,
+          3
+        ) * 0.3;
+        
+        float noise4 = fractalNoise(
+          vec2(
+            rotatedUV1.x * 4.8 * varyingComplexity + flowDir3.x * animTime3 * 0.5,
+            rotatedUV1.y * 4.5 * varyingComplexity + flowDir2.y * animTime2 * 0.5
+          ),
+          complexity,
+          seed + 14.23 + chaosTime * 0.009,
+          2
+        ) * 0.25;
+        
+        // Additional turbulence with time-varying weights
+        float turbWeight = cos(animTime1 * 0.073) * 0.2 + 0.7;
+        float turbulence = fractalNoise(
+          vec2(
+            rotatedUV2.x * 5.0 * varyingComplexity + crossFlow1.x * animTime2 * 0.2,
+            rotatedUV2.y * 5.0 * varyingComplexity + crossFlow2.y * animTime3 * 0.3
+          ),
+          complexity,
+          seed + 15.67 + chaosTime * 0.003,
+          3
+        ) * 0.15 * turbWeight;
+        
+        // NEW: Time-varying weights for all elements
+        float primaryWeight = (sin(animTime1 * 0.037) * 0.15 + 0.45) * (1.0 + burstFactor * 0.3);
+        float secondaryWeight = (cos(animTime2 * 0.043) * 0.1 + 0.3) * (1.0 - burstFactor * 0.2);
+        float detailWeight = (sin(animTime3 * 0.051) * 0.1 + 0.2) * (1.0 + crossInfluence * 0.2);
+        
+        // Combine all elements with time-varying weights and chaotic influences
+        float primaryElement = largeSlowWave * 0.5 + primaryFlow1 * 0.3 + primaryFlow2 * 0.2 + turbulentBurst;
+        float secondaryElement = baseNoise * 0.4 + crossNoise1 * 0.3 + crossNoise2 * 0.3;
+        float detailElement = (noise2 + noise3 + noise4) * 0.4 + turbulence * 0.6;
+        
+        float combinedNoise = primaryElement * primaryWeight + 
+                             secondaryElement * secondaryWeight + 
+                             detailElement * detailWeight;
+        
+        // Add small fast noise with chaotic variation
+        combinedNoise += smallFastNoise * (0.6 + burstFactor * 0.3);
+        
+        // NEW: Occasionally introduce completely different patterns
+        float patternShift = pow(sin(animTime1 * 0.029 + animTime3 * 0.031), 10.0) * 0.5;
+        if (patternShift > 0.2) {
+          float altPattern = fractalNoise(
+            vec2(
+              uv.x * 3.0 * varyingComplexity + sin(chaosTime * 0.4) * 0.5,
+              uv.y * 3.0 * varyingComplexity + cos(chaosTime * 0.3) * 0.5
+            ),
+            complexity,
+            seed + 20.56 + animTime2 * 0.05,
+            4
+          ) * patternShift;
+          
+          combinedNoise = mix(combinedNoise, altPattern, patternShift * 0.5);
+        }
+        
+        // Create smooth distance modification with chaotic influences
         float modifiedDist = mix(
           dist,
-          pow(dist, 2.0 - sphereEffect + sin(animTime * 0.2) * 0.1),
-          sphereEffect + turbulence * 0.2
+          pow(dist, 2.0 - sphereEffect + sin(animTime2 * 0.2) * 0.1 + largeSlowWave * 0.3 + turbulentBurst * 0.2),
+          sphereEffect + turbulence * 0.2 + primaryFlow1 * 0.1 + patternShift * 0.3
         );
 
         // Use animTime for color transitions
@@ -759,15 +1271,38 @@ if (window._guiInitialized) {
         // Apply color intensity
         finalColor = mix(vec3(0.5), finalColor, colorIntensity);
         
-        // Add flowing grain effect with animTime
-        float fineGrain = snoise(uv * 400.0 + flowDir1 * animTime * 0.1) * 0.12 * grainAmount;
-        float mediumGrain = snoise(uv * 200.0 + flowDir2 * animTime * 0.05) * 0.08 * grainAmount;
-        float largeGrain = snoise(uv * 100.0 + flowDir3 * animTime * 0.03) * 0.05 * grainAmount;
+        // NEW: Create more chaotic grain patterns
+        float grainTime1 = animTime1 * 0.05;
+        float grainTime2 = animTime2 * 0.03;
         
-        // Enhanced grain mask
-        float grainMask = 1.0 + sin(animTime * 0.5 + turbulence) * 0.1;
-        vec3 grain = vec3(max(fineGrain + mediumGrain + largeGrain, 0.0)) * grainMask;
-        finalColor += grain;
+        // Reduce grain bursts for more consistent, subtle effect
+        float grainBurst = pow(sin(animTime1 * 0.37) * 0.5 + 0.5, 12.0) * 0.5;
+        
+        // Fine grain with higher frequency but lower amplitude
+        float fineGrain = fractalNoise(
+          uv * 800.0 + fastErraticDir1 * grainTime1 * 0.2, 
+          1.0, 
+          seed + 16.78 + chaosTime * 0.01, 
+          2
+        ) * 0.04 * grainAmount;
+        
+        // Medium grain with more subtle movement
+        float mediumGrain = fractalNoise(
+          rotatedUV1 * 400.0 + flowDir2 * grainTime2 * 0.1, 
+          1.0, 
+          seed + 17.91 + chaosTime * 0.01, 
+          2
+        ) * 0.03 * grainAmount;
+        
+        // We don't need large grain for microsoft.ai style
+        // float largeGrain = fractalNoise(...) * 0.05 * grainAmount;
+        
+        // Create a more uniform grain with less chaotic variations
+        float grainMask = 1.0 + (sin(animTime2 * 0.3) * 0.05);
+        vec3 grain = vec3(max(fineGrain + mediumGrain, 0.0)) * grainMask;
+        
+        // Apply grain with a more subtle approach
+        finalColor = mix(finalColor, finalColor + grain, 0.7);
         
         gl_FragColor = vec4(finalColor, 1.0);
       }
@@ -806,10 +1341,11 @@ if (window._guiInitialized) {
 
     // Animation Loop
     const clock = new THREE.Clock();
-    const initialTime = Math.random() * 100; // Random starting time
+    // Use the existing seed value instead of random for consistency
+    const initialTime = material.uniforms.seed.value % 10; // Use modulo to keep it reasonable
     function animate() {
         requestAnimationFrame(animate);
-        const time = clock.getElapsedTime() + initialTime; // Add initial offset
+        const time = clock.getElapsedTime() + initialTime; // Add consistent offset
         mesh.material.uniforms.time.value = time;
         renderer.render(scene, camera);
     }
