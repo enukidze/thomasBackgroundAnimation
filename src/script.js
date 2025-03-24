@@ -126,14 +126,28 @@ if (window._guiInitialized) {
         uv.x *= 1.4;
         float dist = length(uv);
         
-        // NEW: Use prime number based timing to avoid repeating patterns
-        // Use several different prime-based timescales for maximum variation
-        float animTime = mod(time * speed + seed * 10.0, 1000.0);
-        float animTime1 = mod(time * speed * 1.618033988749895 + seed * 7.3, 1000.0); // Golden ratio
-        float animTime2 = mod(time * speed * 1.414213562373095 + seed * 3.7, 1000.0); // Square root of 2
-        float animTime3 = mod(time * speed * 1.732050807568877 + seed * 5.2, 1000.0); // Square root of 3
+        // Create different speed factors for elements of different sizes
+        float largeElementSpeed = speed * 1.5;    // Large elements move faster
+        float mediumElementSpeed = speed * 1.0;   // Medium elements move at normal speed
+        float smallElementSpeed = speed * 0.6;    // Small elements move slower
+        float microElementSpeed = speed * 0.3;    // Micro details move very slowly
         
-        // NEW: Create a chaotic time variation based on noise
+        // Use several different prime-based timescales with varying speeds
+        float animTime = mod(time * speed + seed * 10.0, 1000.0);
+        
+        // Large elements - increased speed
+        float animTime1 = mod(time * largeElementSpeed * 1.618033988749895 + seed * 7.3, 1000.0); // Golden ratio
+        
+        // Medium elements - normal speed
+        float animTime2 = mod(time * mediumElementSpeed * 1.414213562373095 + seed * 3.7, 1000.0); // Square root of 2
+        
+        // Small elements - decreased speed
+        float animTime3 = mod(time * smallElementSpeed * 1.732050807568877 + seed * 5.2, 1000.0); // Square root of 3
+        
+        // NEW: Add micro movement timing for very fine details
+        float microTime = mod(time * microElementSpeed * 2.236067977499790 + seed * 2.1, 1000.0); // Square root of 5
+        
+        // Create a chaotic time variation based on noise but adjust by size
         float chaosTime = animTime + snoise(vec2(animTime * 0.01, seed)) * 10.0;
         
         // NEW: Use more irrational number relationships and varied seeds
@@ -520,8 +534,9 @@ if (window._guiInitialized) {
         finalColor = mix(vec3(0.5), finalColor, colorIntensity);
         
         // NEW: Create more chaotic grain patterns
-        float grainTime1 = animTime1 * 0.05;
-        float grainTime2 = animTime2 * 0.03;
+        float grainTime1 = microTime * 0.1;
+        float grainTime2 = animTime3 * 0.05;
+        float grainTime3 = animTime3 * 0.03;
         
         // Reduce grain bursts for more consistent, subtle effect
         float grainBurst = pow(sin(animTime1 * 0.37) * 0.5 + 0.5, 12.0) * 0.5;
@@ -878,14 +893,28 @@ if (window._guiInitialized) {
         uv.x *= 1.4;
         float dist = length(uv);
         
-        // NEW: Use prime number based timing to avoid repeating patterns
-        // Use several different prime-based timescales for maximum variation
-        float animTime = mod(time * speed + seed * 10.0, 1000.0);
-        float animTime1 = mod(time * speed * 1.618033988749895 + seed * 7.3, 1000.0); // Golden ratio
-        float animTime2 = mod(time * speed * 1.414213562373095 + seed * 3.7, 1000.0); // Square root of 2
-        float animTime3 = mod(time * speed * 1.732050807568877 + seed * 5.2, 1000.0); // Square root of 3
+        // Create different speed factors for elements of different sizes
+        float largeElementSpeed = speed * 1.5;    // Large elements move faster
+        float mediumElementSpeed = speed * 1.0;   // Medium elements move at normal speed
+        float smallElementSpeed = speed * 0.6;    // Small elements move slower
+        float microElementSpeed = speed * 0.3;    // Micro details move very slowly
         
-        // NEW: Create a chaotic time variation based on noise
+        // Use several different prime-based timescales with varying speeds
+        float animTime = mod(time * speed + seed * 10.0, 1000.0);
+        
+        // Large elements - increased speed
+        float animTime1 = mod(time * largeElementSpeed * 1.618033988749895 + seed * 7.3, 1000.0); // Golden ratio
+        
+        // Medium elements - normal speed
+        float animTime2 = mod(time * mediumElementSpeed * 1.414213562373095 + seed * 3.7, 1000.0); // Square root of 2
+        
+        // Small elements - decreased speed
+        float animTime3 = mod(time * smallElementSpeed * 1.732050807568877 + seed * 5.2, 1000.0); // Square root of 3
+        
+        // NEW: Add micro movement timing for very fine details
+        float microTime = mod(time * microElementSpeed * 2.236067977499790 + seed * 2.1, 1000.0); // Square root of 5
+        
+        // Create a chaotic time variation based on noise but adjust by size
         float chaosTime = animTime + snoise(vec2(animTime * 0.01, seed)) * 10.0;
         
         // NEW: Use more irrational number relationships and varied seeds
@@ -1272,8 +1301,9 @@ if (window._guiInitialized) {
         finalColor = mix(vec3(0.5), finalColor, colorIntensity);
         
         // NEW: Create more chaotic grain patterns
-        float grainTime1 = animTime1 * 0.05;
-        float grainTime2 = animTime2 * 0.03;
+        float grainTime1 = microTime * 0.1;
+        float grainTime2 = animTime3 * 0.05;
+        float grainTime3 = animTime3 * 0.03;
         
         // Reduce grain bursts for more consistent, subtle effect
         float grainBurst = pow(sin(animTime1 * 0.37) * 0.5 + 0.5, 12.0) * 0.5;
