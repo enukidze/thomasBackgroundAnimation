@@ -128,11 +128,11 @@ if (window._guiInitialized) {
         uv.x *= 1.4;
         float dist = length(uv);
         
-        // ONLY modify these 3 lines to use the speed ratios
-        float animTime = mod(time * speed + seed * 10.0, 1000.0);
-        float animTime1 = mod(time * (speed * largeElementSpeedRatio), 1000.0);
-        float animTime2 = mod(time * speed, 1000.0);
-        float animTime3 = mod(time * (speed * smallElementSpeedRatio), 1000.0);
+        // Modify these lines in the fragmentShader string:
+        float animTime = mod(time + seed * 10.0, 1000.0);
+        float animTime1 = mod(time * largeElementSpeedRatio, 1000.0);
+        float animTime2 = mod(time, 1000.0);
+        float animTime3 = mod(time * smallElementSpeedRatio, 1000.0);
         
         // Create a chaotic time variation based on noise
         float chaosTime = animTime + snoise(vec2(animTime * 0.01, seed)) * 10.0;
@@ -551,14 +551,14 @@ if (window._guiInitialized) {
 
     // Settings object with default values
     const settings = {
-      speed: 0.5,
+      speed: 0.1,
       complexity: 2,
       colorIntensity: 1.3,
       grainAmount: 9.0,
       sphereEffect: 0.0,
       layerCompression: 0.0,
-      largeElementSpeedRatio: 5.0,
-      smallElementSpeedRatio: 1.0,
+      largeElementSpeedRatio: 0.5,
+      smallElementSpeedRatio: 0.8,
       gradient1Start: "#336622",
       gradient1End: "#52cc38",
       gradient2Start: "#b26608",
@@ -625,8 +625,11 @@ if (window._guiInitialized) {
     }}, 'exportSettings').name('Export as HTML');
 
     // Add all your GUI controls here
-    animationFolder.add(settings, 'speed', 0.0, 1.0, 0.01)
-        .onChange(value => material.uniforms.speed.value = value);
+    animationFolder.add(settings, 'speed', 0.05, 2.0, 0.01)
+        .name('Main Speed')
+        .onChange(value => {
+            material.uniforms.speed.value = value;
+        });
     animationFolder.add(settings, 'largeElementSpeedRatio', 0.2, 8.0, 0.1)
         .name('Large Element Speed')
         .onChange(value => material.uniforms.largeElementSpeedRatio.value = value);
@@ -669,16 +672,23 @@ if (window._guiInitialized) {
     effectsFolder.open();
     colorsFolder.open();
 
-    // Animation Loop - use consistent time based on seed
-    const clock = new THREE.Clock();
-    // Use the existing seed value instead of random for consistency
-    const initialTime = material.uniforms.seed.value % 10; // Use modulo to keep it reasonable
+    // Animation Loop with fixed time steps and immediate start
+    let timeValue = 50.0; // Start with a significant value to avoid slow startup
+    const BASE_STEP = 0.05; // Higher base step for better default speed
+
     function animate() {
         requestAnimationFrame(animate);
-        const time = clock.getElapsedTime() + initialTime; // Add consistent offset
-        mesh.material.uniforms.time.value = time;
+        
+        // Simple fixed increment - completely independent of frame rate
+        timeValue += BASE_STEP * settings.speed;
+        
+        // Apply the value directly to the shader
+        material.uniforms.time.value = timeValue;
+        
         renderer.render(scene, camera);
     }
+
+    // Start animation immediately
     animate();
 
     // Function to export current settings - moved inside the initialization block
@@ -851,16 +861,23 @@ if (window._guiInitialized) {
     const mesh = new THREE.Mesh(geometry, material);
     scene.add(mesh);
 
-    // Animation Loop
-    const clock = new THREE.Clock();
-    // Use the existing seed value instead of random for consistency
-    const initialTime = material.uniforms.seed.value % 10; // Use modulo to keep it reasonable
+    // Animation Loop with fixed time steps and immediate start
+    let timeValue = 50.0; // Start with a significant value to avoid slow startup
+    const BASE_STEP = 0.05; // Higher base step for better default speed
+
     function animate() {
         requestAnimationFrame(animate);
-        const time = clock.getElapsedTime() + initialTime; // Add consistent offset
-        mesh.material.uniforms.time.value = time;
+        
+        // Simple fixed increment - completely independent of frame rate
+        timeValue += BASE_STEP * \${currentSettings.speed};
+        
+        // Apply the value directly to the shader
+        material.uniforms.time.value = timeValue;
+        
         renderer.render(scene, camera);
     }
+
+    // Start animation immediately
     animate();
 
     // Handle Window Resizing
